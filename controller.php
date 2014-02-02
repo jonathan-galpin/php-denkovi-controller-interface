@@ -49,7 +49,7 @@ class denkovi_controller
         }
         
         // set the board information
-        if( $device_id < 11 )
+        if( (int)$device_id < 11 )
         {
             $this->board_device_id = (int)$device_id - 1;           // devices are zero based
         }
@@ -66,7 +66,7 @@ class denkovi_controller
             }
         }
         $this->board_ip = $denkovi_board_ip;
-        $this->board_port = $denkovi_board_port;
+        $this->board_port = (int)$denkovi_board_port;
         $this->board_serial_address = $denkovi_serial_address;  // command prefix
     }
     
@@ -104,8 +104,7 @@ class denkovi_controller
             case $command_to_board . "0;": return 0; // relay is off
             case $command_to_board . "1;": return 1;  // relay is on
             default:
-                $this->last_error = $answer_from_board;    // error
-                return $answer_from_board;            
+                throw new Exception( $answer_from_board );    // error
         }
         
     }
@@ -114,7 +113,6 @@ class denkovi_controller
     {
         // NOT available to a relay
         if( $this->hardware_type == DENKOVI_RELAY )            throw new Exception( "This is not an analog or digital input device." );
-
         
         // init last error
         $this->last_error = '';
@@ -140,8 +138,7 @@ class denkovi_controller
                 case $command . "0;": return 0; // 0 = connection is open ( switch OFF )
                 case $command . "1;": return 1;  // 1 = connection is closed, button pressed etc ( switch ON )
                 default:
-                    $this->last_error = $answer;    // error
-                    return $answer;            
+                    throw new Exception( $answer_from_board );    // error           
             }
         }
 		else
