@@ -25,8 +25,8 @@ class denkovi_controller
 	 * 
 	 * @var type int
 	 */
-    private $hardware_type;
-	
+	private $hardware_type;
+
 	/**
 	 * 
 	 * device identifiers correspond to Denkovi ethernet board DAEnetIP3 
@@ -39,40 +39,40 @@ class denkovi_controller
 	 * 
 	 * @var type varchar
 	 */
-    private $board_device_identifier;
-	
+	private $board_device_identifier;
+
 	/**
 	 * 3 bytes, denkovi function code
 	 */
-    private $board_device_function_code;    
-	
+	private $board_device_function_code;    
+
 	/**
 	 * default is 192.168.0.100
 	 */
-    private $board_ip;
-	
+	private $board_ip;
+
 	/**
 	 * default is 1010
 	 */
-    private $board_port;
-	
+	private $board_port;
+
 	/**
 	 * default is 00
 	 */
-    private $board_serial_address;
-	
+	private $board_serial_address;
+
 	/**
 	 * defined as DENKOVI_BOARD_NOT_AVAILABLE_FOR_USE in config, set to TRUE for testing purposes when the board is not available 
 	 * @var type boolean, set in config
 	 */
 	private $is_board_in_test_mode;			
-	
+
 	/**
 	 * used when the board is in test mode
 	 * @var type int
 	 */
 	private $current_relay_state;
-	
+
 	/**
 	 * @var type varchar
 	 */
@@ -91,7 +91,7 @@ class denkovi_controller
 		$this->board_serial_address = '00';										// factory default
 		$this->current_relay_state = FALSE;										// off
 		$this->name = '';
-		
+
 		$this->is_board_in_test_mode = DENKOVI_BOARD_NOT_AVAILABLE_FOR_USE;
     }
 
@@ -102,7 +102,7 @@ class denkovi_controller
 	public function get_board_device_identifier()
 	{
 		$this->is_board_ready();
-		
+
 		return $this->board_device_identifier;
 	}
 	
@@ -113,9 +113,9 @@ class denkovi_controller
 	public function get_board_device_number()
 	{
 		$this->is_board_ready();
-		
+
 		if( is_integer( $this->board_device_identifier ) ) return $this->board_device_identifier + 1;
-		
+
 		switch( $this->board_device_identifier ) // string identifier
 		{
 			case 'A': return 11;
@@ -131,27 +131,27 @@ class denkovi_controller
 	{
 		return $this->name;
 	}
-	
+
 	public function get_hardware_type()
 	{
 		return $this->hardware_type;
 	}
 	
 	// to test
-    public function get_analog_digital_input_reading()
-    {
+	public function get_analog_digital_input_reading()
+	{
 		$this->is_board_ready();
-		
-        // NOT available to a relay
-        if( $this->hardware_type == DENKOVI_RELAY )            throw new Exception( "This is not an analog or digital input device." );
-        
-        // init last error
-        $this->last_error = '';
-        
-        // build the command string
-        $command = $this->board_serial_address . $this->board_device_function_code . $this->board_device_identifier . "=";
 
-        try 
+		// NOT available to a relay
+		if( $this->hardware_type == DENKOVI_RELAY )            throw new Exception( "This is not an analog or digital input device." );
+
+		// init last error
+		$this->last_error = '';
+
+		// build the command string
+		$command = $this->board_serial_address . $this->board_device_function_code . $this->board_device_identifier . "=";
+
+		try 
 		{
 			$answer = $this->send_command_and_get_reply($command . "?;");
 		} 
@@ -160,41 +160,41 @@ class denkovi_controller
 			throw $e;
 		}
 
-        if( $this->hardware_type == DENKOVI_INPUT_DIGITAL )
-        {
-            // digital
-            // open closed, on off type answer
-            switch( $answer )
-            {
-                case $command . "0;": return 0;		// 0 = connection is open ( switch OFF )
-                case $command . "1;": return 1;		// 1 = connection is closed, button pressed etc ( switch ON )
-                default:
+		if( $this->hardware_type == DENKOVI_INPUT_DIGITAL )
+		{
+			// digital
+			// open closed, on off type answer
+			switch( $answer )
+			{
+				case $command . "0;": return 0;		// 0 = connection is open ( switch OFF )
+				case $command . "1;": return 1;		// 1 = connection is closed, button pressed etc ( switch ON )
+				default:
 					$this->last_error = $answer_from_board;
-                    throw new Exception( $answer_from_board );    // error           
-            }
-        }
+					throw new Exception( $answer_from_board );    // error           
+			}
+		}
 		else
 		{
-            // analog
-            // temp style sensor
-            // remove the semicolon
-            $answer = str_replace( ";", "", $answer );
-            
-            //separate out the parts
-            $answer = explode( "=", $answer );
-            
-            //send the reading back
-            if( isset( $answer[1] ) )
-            {
-                return $answer[1];
-            }
+			// analog
+			// temp style sensor
+			// remove the semicolon
+			$answer = str_replace( ";", "", $answer );
+
+			//separate out the parts
+			$answer = explode( "=", $answer );
+
+			//send the reading back
+			if( isset( $answer[1] ) )
+			{
+				return $answer[1];
+			}
 			else
 			{
 				$this->last_error = "Analog Answer Not Set";
 				throw new Exception( "Analog Answer Not Set" );    // error 
 			}
-        }
-    }
+		}
+	}
 
 	public function get_is_board_in_test_mode()
 	{
@@ -205,7 +205,7 @@ class denkovi_controller
 	{
 		return $this->set_relay_state_on_or_off( TRUE );
 	}
-	
+
 	public function set_relay_off()
 	{
 		return $this->set_relay_state_on_or_off( FALSE );
@@ -218,24 +218,24 @@ class denkovi_controller
 	 */
 	public function set_hardware_type( $hardware_type )
 	{
-        // whitelist the hardware type
-        switch( $hardware_type )
-        {
-            case DENKOVI_RELAY: 
-                $this->board_device_function_code = 'AS';
-                break;
-            case DENKOVI_INPUT_ANALOG: 
-                $this->board_device_function_code = 'CV';
-                break;
-            case DENKOVI_INPUT_DIGITAL: 
-                $this->board_device_function_code = 'BV';
-                break;
-            default:
-                throw new Exception( "Device $hardware_type unknown!" );
-        }
-		
-        // set the device type
-        $this->hardware_type = $hardware_type;
+		// whitelist the hardware type
+		switch( $hardware_type )
+		{
+			case DENKOVI_RELAY: 
+				$this->board_device_function_code = 'AS';
+				break;
+			case DENKOVI_INPUT_ANALOG: 
+				$this->board_device_function_code = 'CV';
+				break;
+			case DENKOVI_INPUT_DIGITAL: 
+				$this->board_device_function_code = 'BV';
+				break;
+			default:
+				throw new Exception( "Device $hardware_type unknown!" );
+		}
+
+		// set the device type
+		$this->hardware_type = $hardware_type;
 	}
 
 	/**
@@ -247,23 +247,23 @@ class denkovi_controller
 	public function set_board_device_identifier_from_device_number( $device_number )
 	{
 		if( (int)$device_number < 1 || (int)$device_number > 16 )		throw new Exception("Device ID's must be between 1 and 16.");	// specific to board configuration
-		
-        if( (int)$device_number < 11 )
-        {
-            $this->board_device_identifier = (int)$device_number - 1;	// devices are zero based
-        }
+
+		if( (int)$device_number < 11 )
+		{
+			$this->board_device_identifier = (int)$device_number - 1;	// devices are zero based
+		}
 		else
 		{
-            switch( (int)$device_number )
-            {
-                case 11: $this->board_device_identifier = 'A'; break;
-                case 12: $this->board_device_identifier = 'B'; break;
-                case 13: $this->board_device_identifier = 'C'; break;
-                case 14: $this->board_device_identifier = 'D'; break;
-                case 15: $this->board_device_identifier = 'E'; break;
-                case 16: $this->board_device_identifier = 'F'; break;
-            }
-        }		
+			switch( (int)$device_number )
+			{
+				case 11: $this->board_device_identifier = 'A'; break;
+				case 12: $this->board_device_identifier = 'B'; break;
+				case 13: $this->board_device_identifier = 'C'; break;
+				case 14: $this->board_device_identifier = 'D'; break;
+				case 15: $this->board_device_identifier = 'E'; break;
+				case 16: $this->board_device_identifier = 'F'; break;
+			}
+		}		
 	}
 
 	public function set_device_name( $friendly_name )
@@ -271,56 +271,56 @@ class denkovi_controller
 		if( !gettype( $friendly_name ) == "string" )			throw new Exception( "Please provide a string for the name." );
 		$this->name = $friendly_name;
 	}
-	
+
 	public function set_board_ip( $ip_address )
 	{
 		if( !filter_var( $ip_address, FILTER_VALIDATE_IP ) )	throw new Exception( "Please provide a valid IP address." );
 		$this->board_ip = $ip_address;			
 	}
-	
+
 	public function set_board_port( $board_port )
 	{
 		if( !gettype( $board_port ) == "string" )				throw new Exception( "Please provide a string for the board port." );
 		$this->board_port = $board_port;
 	}
-	
+
 	public function set_board_serial_address( $serial_address )
 	{
 		if( !gettype( $serial_address ) == "string" )			throw new Exception( "Please provide a string for the serial address." );
 		$this->board_serial_address = $serial_address;	
 	}
-	
+
 	public function set_board_test_mode_on()
 	{
 		$this->is_board_in_test_mode = TRUE;
 	}
-	
+
 	public function set_board_test_mode_off()
 	{
 		$this->is_board_in_test_mode = FALSE;
 	}
 	
-    /**
-     * returns the current state of a relay
-     * 
-     * 1 = TRUE = on, 0 = FALSE = off
-     * 
-     * if not 1/0, the last error is set
-     * 
-     * @return string|1|1 
-     */
-    public function get_relay_state_on_or_off()
-    {
+	/**
+	 * returns the current state of a relay
+	 * 
+	 * 1 = TRUE = on, 0 = FALSE = off
+	 * 
+	 * if not 1/0, the last error is set
+	 * 
+	 * @return string|1|1 
+	 */
+	public function get_relay_state_on_or_off()
+	{
 		$this->is_board_ready();
-		
-        // only available to a relay
-        if( $this->hardware_type != DENKOVI_RELAY )            throw new Exception("This is not a relay.");
 
-        // init last error
-        $this->last_error = '';
-        
-        // build the command string
-        $command_to_board = $this->board_serial_address . $this->board_device_function_code . $this->board_device_identifier . "=";
+		// only available to a relay
+		if( $this->hardware_type != DENKOVI_RELAY )            throw new Exception("This is not a relay.");
+
+		// init last error
+		$this->last_error = '';
+
+		// build the command string
+		$command_to_board = $this->board_serial_address . $this->board_device_function_code . $this->board_device_identifier . "=";
 
 		try 
 		{
@@ -331,39 +331,39 @@ class denkovi_controller
 			throw $e;
 		}
 
-        switch ( $answer_from_board )
-        {
-            case $command_to_board . "0;": return 0;	// relay is off
-            case $command_to_board . "1;": return 1;	// relay is on
-            default:
+		switch ( $answer_from_board )
+		{
+			case $command_to_board . "0;": return 0;	// relay is off
+			case $command_to_board . "1;": return 1;	// relay is on
+			default:
 				if( $this->is_board_in_test_mode ) return ( $this->current_relay_state ? 1 : 0 );				// not an error
-				
+
 				$this->last_error = $answer_from_board;
-                throw new Exception( "The answer from the board was not understood: " . $answer_from_board );    // error
-        }
-    }
+				throw new Exception( "The answer from the board was not understood: " . $answer_from_board );    // error
+		}
+	}
 
 	/**
-     * sets the relay to on or off
-     * 
-     * @param type $on -- TRUE or FALSE
-     * @return boolean true == worked, false == error, check last error 
-     */
-    private function set_relay_state_on_or_off( $bool_on_or_off )
-    {
+	 * sets the relay to on or off
+	 * 
+	 * @param type $on -- TRUE or FALSE
+	 * @return boolean true == worked, false == error, check last error 
+	 */
+	private function set_relay_state_on_or_off( $bool_on_or_off )
+	{
 		$this->is_board_ready();
-		
-        // only available to a relay
-        if( $this->hardware_type != DENKOVI_RELAY )            throw new Exception("This is not a relay.");
-        
-        // init last error
-        $this->last_error = '';
-        
-        // build the command string
-        $command = $this->board_serial_address . $this->board_device_function_code . $this->board_device_identifier 
-                . "=" . ( $bool_on_or_off === TRUE ? '1;' : '0;' );
 
-        // send the command, receive the reply
+		// only available to a relay
+		if( $this->hardware_type != DENKOVI_RELAY )            throw new Exception("This is not a relay.");
+
+		// init last error
+		$this->last_error = '';
+
+		// build the command string
+		$command = $this->board_serial_address . $this->board_device_function_code . $this->board_device_identifier 
+				. "=" . ( $bool_on_or_off === TRUE ? '1;' : '0;' );
+
+		// send the command, receive the reply
 		try
 		{
 			$answer = $this->send_command_and_get_reply( $command );
@@ -372,33 +372,33 @@ class denkovi_controller
 		{
 			throw $e;
 		}
-        // the board repeats a successful command back
-        if( $answer == $command )
-        {
+		// the board repeats a successful command back
+		if( $answer == $command )
+		{
 			$this->current_relay_state = (bool)$bool_on_or_off;
-			
-            // was set sucessfully
-            return 1;    
-        }
+
+			// was set sucessfully
+			return 1;    
+		}
 		else
 		{
-            $this->last_error = $answer;
-            return $answer;
-        }
-    }
+			$this->last_error = $answer;
+			return $answer;
+		}
+	}
 	
-    private function send_command_and_get_reply( $command ) 
-    {
+	private function send_command_and_get_reply( $command ) 
+	{
 		$this->is_board_ready();
-				
-        $board_reply = "";
+
+		$board_reply = "";
 
 		// testing
 		if( $this->is_board_in_test_mode )
 		{
 			return $command;
 		}
-		
+
 		try
 		{
 			// Create a TCP Stream Socket
@@ -459,7 +459,7 @@ class denkovi_controller
 		{
 			throw new Exception( "We have some sort of communication issue with the board, is it on? [ {$e->getMessage()} ]" );
 		}
-    }
+	}
 	
 	private function is_board_ready()
 	{
