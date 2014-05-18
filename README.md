@@ -33,6 +33,7 @@ To Control a Relay
 require_once( 'relay.php' );
 
 $relay = new relay( 1 );
+
 $relay->set_name("Front Porch Light");
 
 $relay->on();	// turn the relay on	
@@ -41,9 +42,9 @@ echo "The {$relay->name} is now {$relay->status()}.";		// The Front Porch Light 
 
 $relay->off();	// turn relay off
 
-$relay->is_relay_off()	// is it off?, returns true if off, else false
-$relay->is_relay_on()	// is it on, returns true if on, else false
+$relay->is_relay_off()	// is it off?
 
+$relay->is_relay_on()	// is it on?
 
 
 To run the unit tests
