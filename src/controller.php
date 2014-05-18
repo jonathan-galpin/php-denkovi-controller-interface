@@ -83,9 +83,9 @@ class denkovi_controller
 	 * @var type varchar
 	 */
 	public  $last_error;  
-	
-    public function __construct() 
-    {
+
+	public function __construct() 
+	{
 		if( defined('DENKOVI_BOARD_IP') ) $this->board_ip = DENKOVI_BOARD_IP;	
 		$this->board_port = '1010';												// factory default
 		$this->board_serial_address = '00';										// factory default
@@ -93,7 +93,7 @@ class denkovi_controller
 		$this->name = '';
 
 		$this->is_board_in_test_mode = DENKOVI_BOARD_NOT_AVAILABLE_FOR_USE;
-    }
+	}
 
 	/**
 	 * returns the device identifier, 0-9 A,B,C,D,E,F
