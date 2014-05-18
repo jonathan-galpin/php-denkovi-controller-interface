@@ -13,7 +13,7 @@ require_once 'controller.php';
 
 interface device_interface
 {
-	public function status( $force = FALSE );
+	public function status();
 }
 
 class device implements device_interface
@@ -43,7 +43,7 @@ class device implements device_interface
 	 *		false (default) = check the current locally stored state and return this
 	 * @return type varchar 
 	 */
-	public function status( $force = FALSE )
+	public function status()
 	{
 		// implement in the respective device
 	}

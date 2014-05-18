@@ -62,7 +62,7 @@ class denkovi_controller
 	private $board_serial_address;
 
 	/**
-	 * defined as DENKOVI_BOARD_NOT_AVAILABLE_FOR_USE in config, set to TRUE for testing purposes when the board is not available 
+	 * defined as DENKOVI_BOARD_IS_AVAILABLE_FOR_USE in config
 	 * @var type boolean, set in config
 	 */
 	private $is_board_in_test_mode;			
@@ -92,7 +92,7 @@ class denkovi_controller
 		$this->current_relay_state = FALSE;										// off
 		$this->name = '';
 
-		$this->is_board_in_test_mode = DENKOVI_BOARD_NOT_AVAILABLE_FOR_USE;
+		$this->is_board_in_test_mode = !DENKOVI_BOARD_IS_AVAILABLE_FOR_USE;
 	}
 
 	/**
@@ -153,7 +153,7 @@ class denkovi_controller
 
 		try 
 		{
-			$answer = $this->send_command_and_get_reply($command . "?;");
+			$answer_from_board = $this->send_command_and_get_reply($command . "?;");
 		} 
 		catch( Exception $e )
 		{
@@ -164,7 +164,7 @@ class denkovi_controller
 		{
 			// digital
 			// open closed, on off type answer
-			switch( $answer )
+			switch( $answer_from_board )
 			{
 				case $command . "0;": return 0;		// 0 = connection is open ( switch OFF )
 				case $command . "1;": return 1;		// 1 = connection is closed, button pressed etc ( switch ON )
@@ -178,15 +178,15 @@ class denkovi_controller
 			// analog
 			// temp style sensor
 			// remove the semicolon
-			$answer = str_replace( ";", "", $answer );
+			$answer_from_board = str_replace( ";", "", $answer_from_board );
 
 			//separate out the parts
-			$answer = explode( "=", $answer );
+			$answer_from_board = explode( "=", $answer_from_board );
 
 			//send the reading back
-			if( isset( $answer[1] ) )
+			if( isset( $answer_from_board[1] ) )
 			{
-				return $answer[1];
+				return $answer_from_board[1];
 			}
 			else
 			{
@@ -366,14 +366,14 @@ class denkovi_controller
 		// send the command, receive the reply
 		try
 		{
-			$answer = $this->send_command_and_get_reply( $command );
+			$answer_from_board = $this->send_command_and_get_reply( $command );
 		}
 		catch( Exception $e )
 		{
 			throw $e;
 		}
 		// the board repeats a successful command back
-		if( $answer == $command )
+		if( $answer_from_board == $command )
 		{
 			$this->current_relay_state = (bool)$bool_on_or_off;
 
@@ -382,8 +382,8 @@ class denkovi_controller
 		}
 		else
 		{
-			$this->last_error = $answer;
-			return $answer;
+			$this->last_error = $answer_from_board;
+			return $answer_from_board;
 		}
 	}
 	
