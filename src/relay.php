@@ -4,7 +4,7 @@
  *
  * @author Jonathan Galpin, May 2014 jonathan@iqzero.net
  */
-require_once 'src/device.php';
+require_once 'base/device.php';
 
 class relay extends device
 {

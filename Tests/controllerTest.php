@@ -5,44 +5,10 @@
  * Description: Controller unit tests
  * 
  */
-require_once( 'src/controller.php' );
-require_once( 'relay.php' );
+require_once( 'src/base/controller.php' );
 
 class controllerRelaySensorTest extends PHPUnit_Framework_TestCase
 {
-	public function testRelay()
-	{
-		//sleep(10);
-		for( $i=1; $i < 17; $i++ )
-		{
-			$relay = new relay( $i );
-			
-			$this->assertEquals( DENKOVI_RELAY, $relay->get_hardware_type_as_int() );
-			
-			if( !$relay->is_board_in_test_mode() ) sleep(1);
-			
-			$relay->set_name("MyRelay-$i");
-
-			$this->assertEquals( $i, $relay->id );
-			$this->assertEquals( "MyRelay-$i", $relay->name );	// tests get device name & set_name
-
-			$this->assertEquals( 1, $relay->is_relay_off() );
-			$this->assertEquals( "Off", $relay->status() );	
-
-			$relay->on();
-			$this->assertEquals( 1, $relay->is_relay_on() );		
-			$this->assertEquals( 0, $relay->is_relay_off() );		
-			$this->assertEquals( "On", $relay->status() );		
-
-			$relay->off();
-			$this->assertEquals( 0, $relay->is_relay_on() );		
-			$this->assertEquals( 1, $relay->is_relay_off() );
-			$this->assertEquals( "Off", $relay->status() );	
-
-			unset( $relay );
-		}
-	}
-	
 	public function testControlBoardNotAvailable()
 	{
 		$controller = new denkovi_controller();				
@@ -122,7 +88,7 @@ class controllerRelaySensorTest extends PHPUnit_Framework_TestCase
 		$controller->set_board_port( '1010' );
 		$controller->set_board_serial_address( '00' );
 		
-		if( DENKOVI_BOARD_NOT_AVAILABLE_FOR_USE === FALSE ) 
+		if( DENKOVI_BOARD_IS_AVAILABLE_FOR_USE === TRUE ) 
 		{
 			$controller->set_board_test_mode_off();
 		}
@@ -140,7 +106,7 @@ class controllerRelaySensorTest extends PHPUnit_Framework_TestCase
 	{
 		$relay = new relay( 1 );
 			
-		if( DENKOVI_BOARD_NOT_AVAILABLE_FOR_USE === FALSE ) 
+		if( DENKOVI_BOARD_IS_AVAILABLE_FOR_USE === TRUE ) 
 		{
 			$this->assertFalse(	$relay->is_board_in_test_mode() );
 		}
